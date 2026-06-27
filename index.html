@@ -91,10 +91,18 @@
 
   #loading { position: fixed; inset: 0; z-index: 60; background: #0b1320; color: #9fc3ff;
              display: flex; align-items: center; justify-content: center; font-size: 14px; letter-spacing: 3px; }
+
+  #muteBtn { position: fixed; top: 12px; right: 14px; z-index: 30; width: 42px; height: 42px;
+             border-radius: 8px; border: 2px solid rgba(255,255,255,.35); background: rgba(0,0,0,.35);
+             color: #fff; font-size: 18px; cursor: pointer; display: none; }
+  #muteBtn:hover { background: rgba(0,0,0,.55); }
 </style>
 </head>
 <body>
   <div id="loading">LOADING WORLD…</div>
+
+  <audio id="bgm" src="assets/minecraft-bg.mp3" loop preload="auto"></audio>
+  <button id="muteBtn" title="Toggle music">🔊</button>
 
   <div id="compass">N</div>
   <div id="crosshair"></div>
@@ -362,7 +370,7 @@ treeSpots.forEach(([x,z]) => tree(x, z));
 // ---- ZONE: ABOUT (west, -X) ----
 zoneWall(-30, 0, Math.PI/2, 0x6ab04c);
 placeBoard(-24, 0, Math.PI/2, [
-  { t: '§ I  —  ABOUT', size: 40, color:'#3a2510', weight:800, lh:60 },
+  { t: 'ABOUT', size: 40, color:'#3a2510', weight:800, lh:60 },
   { t: 'I build companies the way most kids', size: 30 },
   { t: 'build playlists. By 15: five ventures,', size: 30 },
   { t: 'one to paying customers in week one,', size: 30 },
@@ -444,7 +452,7 @@ honors.forEach(h => {
 // ---- ZONE: CONTACT (north, -Z) ----
 zoneWall(0, -30, Math.PI, 0xb04c8a);
 placeBoard(0, -24, 0, [
-  { t: '§ IV — CONTACT', size: 40, color:'#3a2510', weight:800, lh:64 },
+  { t: 'CONTACT', size: 40, color:'#3a2510', weight:800, lh:64 },
   { t: 'Building something? Let’s talk.', size: 30, color:'#5a3a18', lh:58 },
   { t: '✉  temirlan@extensy.dev', size: 30, lh:48 },
   { t: '☎  +7 777 111 0474', size: 30, lh:48 },
@@ -496,8 +504,26 @@ let locked = false;
 
 let dragging = false; // fallback drag-to-look when pointer lock isn't available
 
+// ---- Background music (starts on the Enter-World user gesture) ----
+const bgm = document.getElementById('bgm');
+const muteBtn = document.getElementById('muteBtn');
+bgm.volume = 0.45;
+let musicOn = true;
+function startMusic() {
+  if (!musicOn) return;
+  bgm.play().catch(() => {}); // ignore autoplay rejections
+}
+muteBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  musicOn = !musicOn;
+  if (musicOn) { bgm.play().catch(() => {}); muteBtn.textContent = '🔊'; }
+  else { bgm.pause(); muteBtn.textContent = '🔇'; }
+});
+
 playBtn.addEventListener('click', () => {
   overlay.classList.add('hidden');
+  muteBtn.style.display = 'block';
+  startMusic();
   // Try pointer lock; if it fails (e.g. inside an iframe/preview), drag-to-look still works.
   if (!isTouch && renderer.domElement.requestPointerLock) {
     try { renderer.domElement.requestPointerLock(); } catch (_) {}
@@ -608,10 +634,10 @@ const toast = document.getElementById('zoneToast');
 const slots = [...document.querySelectorAll('.slot')];
 let currentZone = -1;
 const zones = [
-  { name:'ABOUT', sub:'§ I', test:p => p.x < -14 && Math.abs(p.z) < 20, slot:0 },
-  { name:'VENTURES', sub:'§ II', test:p => p.x > 14 && Math.abs(p.z) < 20, slot:1 },
-  { name:'HONORS', sub:'§ III', test:p => p.z > 14 && Math.abs(p.x) < 18, slot:2 },
-  { name:'CONTACT', sub:'§ IV', test:p => p.z < -14 && Math.abs(p.x) < 14, slot:3 },
+  { name:'ABOUT', sub:'I', test:p => p.x < -14 && Math.abs(p.z) < 20, slot:0 },
+  { name:'VENTURES', sub:'II', test:p => p.x > 14 && Math.abs(p.z) < 20, slot:1 },
+  { name:'HONORS', sub:'III', test:p => p.z > 14 && Math.abs(p.x) < 18, slot:2 },
+  { name:'CONTACT', sub:'IV', test:p => p.z < -14 && Math.abs(p.x) < 14, slot:3 },
 ];
 function updateZone() {
   let z = -1;
@@ -637,10 +663,10 @@ function updateCompass() {
 /* ---------- Hotbar teleport (press 1-4) ---------- */
 // Each inventory item warps you straight in front of that zone's boards.
 const teleports = [
-  { name:'HOME',     sub:'§ · SPAWN', x: 0,  z: 1,   yaw: Math.PI },        // 1 · 🏠
-  { name:'VENTURES', sub:'§ II',      x: 18, z: -1,  yaw: -Math.PI / 2 },   // 2 · 🚀
-  { name:'HONORS',   sub:'§ III',     x: 0,  z: 18,  yaw: Math.PI },        // 3 · 🏆
-  { name:'CONTACT',  sub:'§ IV',      x: 0,  z: -18, yaw: 0 },              // 4 · ✉️
+  { name:'HOME',     sub:'SPAWN', x: 0,  z: 1,   yaw: Math.PI },        // 1 · 🏠
+  { name:'VENTURES', sub:'II',    x: 18, z: -1,  yaw: -Math.PI / 2 },   // 2 · 🚀
+  { name:'HONORS',   sub:'III',   x: 0,  z: 18,  yaw: Math.PI },        // 3 · 🏆
+  { name:'CONTACT',  sub:'IV',    x: 0,  z: -18, yaw: 0 },              // 4 · ✉️
 ];
 function teleportTo(i) {
   const t = teleports[i];
