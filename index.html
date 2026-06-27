@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Temirlan Kalmukhan — Voxel Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #87b5e8; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -50,32 +53,65 @@
   #zoneToast .big { font-size: 30px; font-weight: 800; letter-spacing: 1px; }
   #zoneToast .small { font-size: 13px; opacity: .85; margin-top: 2px; letter-spacing: 4px; text-transform: uppercase; }
 
-  /* ---------- Overlay / menu ---------- */
+  /* ---------- Overlay / Minecraft-style main menu ---------- */
   #overlay {
-    position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 30%, rgba(20,40,70,.55), rgba(8,14,24,.92));
-    backdrop-filter: blur(3px); transition: opacity .35s; color: #eaf2ff;
+    position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    background: rgba(0,0,0,.45); backdrop-filter: blur(2px); transition: opacity .35s;
+    font-family: 'Press Start 2P', 'Courier New', monospace; color: #fff;
+    image-rendering: pixelated;
   }
   #overlay.hidden { opacity: 0; pointer-events: none; }
-  .panel {
-    width: min(560px, 90vw); background: rgba(15,22,36,.85); border: 2px solid rgba(120,160,220,.35);
-    border-radius: 14px; padding: 30px 34px 26px; box-shadow: 0 30px 80px rgba(0,0,0,.6);
-    text-align: center;
+
+  /* Minecraft logo */
+  .mc-logo { text-align: center; user-select: none; margin-bottom: 14px; line-height: 1; }
+  .mc-logo .title-img {
+    width: min(560px, 88vw); height: auto; display: block; margin: 0 auto;
+    image-rendering: auto; filter: drop-shadow(4px 8px 8px rgba(0,0,0,.55));
   }
-  .panel h1 { font-size: clamp(26px, 5vw, 40px); font-weight: 800; letter-spacing: .5px; }
-  .panel .sub { color: #8fb4e8; margin-top: 4px; font-size: 14px; letter-spacing: 5px; text-transform: uppercase; }
-  .panel p { color: #b9c6dc; margin-top: 16px; line-height: 1.6; font-size: 14.5px; }
-  .keys { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0 6px; }
-  .key { background: #1d2940; border: 1px solid #36507a; border-bottom-width: 3px; border-radius: 6px;
-         padding: 7px 11px; font-size: 12px; color: #d8e6ff; min-width: 30px; }
-  #playBtn {
-    margin-top: 22px; padding: 14px 38px; font-size: 16px; font-weight: 700; letter-spacing: 1px;
-    color: #06210f; background: linear-gradient(#7be08a, #4cc46a); border: none; border-bottom: 4px solid #2f8f49;
-    border-radius: 9px; cursor: pointer; text-transform: uppercase; transition: transform .1s, filter .15s;
+  .mc-logo .edition {
+    display: inline-block; margin-top: 18px; font-size: clamp(10px, 2.4vw, 17px);
+    color: #d8d8d8; letter-spacing: 1px;
+    text-shadow: 2px 2px 0 #4a4a4a, 3px 4px 6px rgba(0,0,0,.5);
   }
-  #playBtn:hover { filter: brightness(1.06); }
-  #playBtn:active { transform: translateY(2px); border-bottom-width: 2px; }
-  .credit { margin-top: 18px; font-size: 11px; color:#5d728f; letter-spacing: 2px; }
+  .splash {
+    position: absolute; right: 4%; top: clamp(70px, 16vh, 150px);
+    color: #ffff00; font-family: 'Press Start 2P', monospace; font-size: clamp(9px, 1.6vw, 14px);
+    transform: rotate(-18deg); transform-origin: center;
+    text-shadow: 2px 2px 0 #3f3f00; animation: splashPulse 1s ease-in-out infinite;
+    pointer-events: none; white-space: nowrap;
+  }
+  @keyframes splashPulse { 0%,100%{ transform: rotate(-18deg) scale(1);} 50%{ transform: rotate(-18deg) scale(1.12);} }
+
+  /* Stone buttons */
+  .mc-btn {
+    display: block; width: min(420px, 82vw); margin: 0 auto; padding: 15px 12px;
+    font-family: 'Press Start 2P', monospace; font-size: 12px; letter-spacing: .5px;
+    color: #fff; text-shadow: 2px 2px 0 #3a3a3a; cursor: pointer; image-rendering: pixelated;
+    background: linear-gradient(rgba(255,255,255,.16), rgba(255,255,255,0) 46%, rgba(0,0,0,.20)), #6d6d6d;
+    border: 2px solid #000;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,.28), inset -2px -2px 0 rgba(0,0,0,.5), 0 3px 0 #1c1c1c;
+  }
+  .mc-btn:hover { background: linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,0) 46%, rgba(0,0,0,.2)), #82917f;
+                  color: #ffffa6; outline: 2px solid #fff; outline-offset: -5px; }
+  .mc-btn:active { transform: translateY(2px); box-shadow: inset 2px 2px 0 rgba(255,255,255,.2), inset -2px -2px 0 rgba(0,0,0,.5); }
+  .mc-row { display: flex; gap: 8px; width: min(420px, 82vw); margin: 0 auto; }
+  .mc-row .mc-btn { width: auto; flex: 1; }
+  .mc-btn.sq { width: 50px; flex: 0 0 50px; padding: 12px 0; font-size: 16px; }
+
+  #controlsBox {
+    width: min(420px, 82vw); margin: 4px auto 0; display: none; flex-wrap: wrap; gap: 6px;
+    justify-content: center; background: rgba(0,0,0,.4); border: 2px solid #000; padding: 12px;
+  }
+  #controlsBox.show { display: flex; }
+  #controlsBox .key { font-family: 'Press Start 2P', monospace; font-size: 9px; line-height: 1.5;
+    color: #d8d8d8; background: #4a4a4a; border: 2px solid #000;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,.2); padding: 7px 8px; text-shadow: 1px 1px 0 #222; }
+
+  .mc-foot { position: fixed; bottom: 8px; font-family: 'Press Start 2P', monospace;
+             font-size: 10px; color: #e8e8e8; text-shadow: 2px 2px 0 #2a2a2a; z-index: 41; pointer-events: none; }
+  .mc-foot.left { left: 10px; } .mc-foot.right { right: 10px; }
+  #overlay.hidden ~ .mc-foot { display: none; }
 
   /* ---------- Mobile controls ---------- */
   #touchUI { position: fixed; inset: 0; z-index: 15; display: none; pointer-events: none; }
@@ -113,6 +149,8 @@
     <div class="slot"><span class="num">2</span>🚀</div>
     <div class="slot"><span class="num">3</span>🏆</div>
     <div class="slot"><span class="num">4</span>✉️</div>
+    <div class="slot"><span class="num">5</span>🏰</div>
+    <div class="slot"><span class="num">6</span>🏖️</div>
   </div>
 
   <div id="touchUI">
@@ -121,23 +159,30 @@
   </div>
 
   <div id="overlay">
-    <div class="panel">
-      <h1>TEMIRLAN KALMUKHAN</h1>
-      <div class="sub">Voxel Portfolio</div>
-      <p>Walk through a Minecraft-style world. Each zone is a chapter of my story —
-         read the boards: <b>About</b>, <b>Ventures</b>, <b>Honors</b>, <b>Contact</b>.</p>
-      <div class="keys">
-        <span class="key">W A S D — move</span>
-        <span class="key">Mouse / hold-drag — look</span>
-        <span class="key">Space — jump</span>
-        <span class="key">Shift — sprint</span>
-        <span class="key">Esc — menu</span>
-        <span class="key">1·2·3·4 — teleport to zone</span>
-      </div>
-      <button id="playBtn">▶ Enter World</button>
-      <div class="credit">© MMXXVI · Astana, Kazakhstan</div>
+    <div class="mc-logo">
+      <img id="logoImg" class="title-img" src="assets/temircraft.png" alt="TEMIRCRAFT">
+      <div class="edition">PORTFOLIO EDITION</div>
+    </div>
+    <div class="splash" id="splash">Vibe coded!</div>
+
+    <button class="mc-btn" id="playBtn">Войти в мир</button>
+    <button class="mc-btn" id="ctrlBtn">Управление</button>
+    <div class="mc-row">
+      <button class="mc-btn" id="menuMusicBtn">Музыка: Вкл</button>
+      <button class="mc-btn sq" id="quitBtn" title="LinkedIn">in</button>
+    </div>
+
+    <div id="controlsBox">
+      <span class="key">W A S D — Идти</span>
+      <span class="key">Мышь / зажать — Обзор</span>
+      <span class="key">Space — Прыжок</span>
+      <span class="key">Shift — Бег</span>
+      <span class="key">1–6 — Телепорт</span>
+      <span class="key">Esc — Меню</span>
     </div>
   </div>
+  <div class="mc-foot left">Portfolio Edition 1.0</div>
+  <div class="mc-foot right">© MMXXVI · Temirlan Kalmukhan</div>
 
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -198,46 +243,57 @@ function noiseFill(g, size, base, vary) {
 }
 const clamp = v => Math.max(0, Math.min(255, v));
 
-const texGrassTop = pixelTexture(g => noiseFill(g, 16, [96, 168, 78], 34));
-const texDirt     = pixelTexture(g => noiseFill(g, 16, [134, 96, 62], 30));
-const texStone    = pixelTexture(g => noiseFill(g, 16, [128, 128, 132], 26));
-const texPlank    = pixelTexture((g, size) => {
-  noiseFill(g, size, [176, 138, 86], 16);
-  g.fillStyle = 'rgba(90,62,34,.55)';
-  for (let y = 0; y < size; y += 4) g.fillRect(0, y, size, 1);
-  g.fillRect(7, 0, 1, size);
-});
-const texLeaves = pixelTexture(g => noiseFill(g, 16, [54, 122, 48], 40));
-const texLog    = pixelTexture((g, size) => {
-  noiseFill(g, size, [110, 78, 48], 18);
-  g.fillStyle = 'rgba(70,48,28,.5)';
-  for (let x = 0; x < size; x += 3) g.fillRect(x, 0, 1, size);
-});
-const texPath = pixelTexture(g => noiseFill(g, 16, [150, 140, 110], 22));
+// ---- Image textures (user-provided Minecraft blocks) ----
+// Load via a plain <img> (no crossOrigin) so it works in sandboxed previews
+// without CORS headers — THREE.TextureLoader forces crossOrigin='anonymous'
+// and fails there. NearestFilter + ClampToEdge keeps non-power-of-two images
+// from rendering black.
+function blockTex(url) {
+  const t = new THREE.Texture();
+  t.magFilter = THREE.NearestFilter;
+  t.minFilter = THREE.NearestFilter;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  const img = new Image();
+  img.onload  = () => { t.image = img; t.needsUpdate = true; };
+  img.onerror = () => console.warn('texture failed:', url);
+  img.src = url;
+  return t;
+}
+const texGrassTop = blockTex('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACEUlEQVR4nB2SWZLTQBBEu5ZetI3DhoEPrsFduAaX5oMg8DCSLfVSVU1oLpCZ8fLBj5/fHaKqhUhS7d+f/fplihOb9e2eAaD37qw751T7OHvuzplYK1qz1kOmS2KP2z2nkQmhVXPQCREJlmuUplyzxoEbOM80LQER3v/uALAVDZHjyNJUikbvS5ayN36uhQIRn6tMoWZLg2/VAKEWjUiXT0MrRgx/fm3DHPD12wszhkSu932tx7O2KoDOzJChVd0f1YG7/376SCExbv9yq6LNfCAgGJfIkS+fBvY0X0Ic6O33rs3GJTjn9q3imYQA4MxcGrw0BXDr24Ho6iE163JNZ89WEJEDchp8NyfWQ6TnWsYl1iy1KFE/mQQapjMFKSCAmePybMstifZySBo9ewwpPt4cBxrnMMzh/X7kRwsDEzkVQyB4rtVZ94FUOhHWLEgQEpcs2313vS+3yIwxcS2K/MF0mAOgI4aaxZkDgJobM/jI3XrexbSvb9lHwhhJ1d7/HqY9Dvxcq4p1s+NRH2vNR1PtNesw+/MoMTx2kaLTJbRq0owIjkO6A/Z0+zoTYRx5vgSpOr2El2vC6RIur4PrQAjd3HI7XVpuKUTe12zWwZw2BTqVW+8Hl72BAzz/6LXIvhUOuK+FGVVO8PbB4/leAIECYjkkH9LBLddUs6QphMQ1i5m1puUQHygkz0zXz2Pw/B+SQ2sotD7oVAAAAABJRU5ErkJggg==');  // green grass
+const texStone    = blockTex('data:image/png;base64,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');  // stone
+const texPlank    = blockTex('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACXklEQVR4nCWR3WoUQRCFq7p7fpPdnZjIhs1qFH9QESUigqB5FX0K38WXEfQuIBEhF/FCFPLjJpvsZmZndqa7p6pkkro6N+dw6nz45fPHyVXeMvuWo9CM1jIRqa27qqphNtBKISIAICIxn87mymg9upVlSXp6VvXC2Hl/XhRFXaPC6aKcLhaNcyeXc+fbzqrQNNazwKyshhvJrCqxwn6SaKPCwNwEV0v783C6u7PCAM4RfvrwjpkFJI4DEVGqK3EjiLix3reMAlFoosgIgNl9tX2WF54oNFoptZkNROA8zzf6vcuuT3v0r3z5cGi0AoAwCMzS2zDQZ9P65aNhGGiFqI0Oa60V3O6vEsnWrax0TUstADTkTS9OejEMHqwQMSktClzj68Y3Nm9bOfpXvnk2HsQpC1yvBWbv4FgEnGuJGQCcJ6NVHAeIwCzL2n3b/4Pd8xhFhkXMm+fjziiiEK2n74en26PendtrImCdFxEiSZMIQIj5PC/Mol4KSOcB0Ert7mwzkQjPq0pAiOBkUr1+unW1LH1LYaBML06dd11DxNAYIpnMC5buFGKWpo/GUbW0AQSoVG5rs3dw5ByFkQGBxvqWGBHCsKMGCAoLBLS27eKNDiJj3r64y8zEHRoimuaL9f7qNC8YoON3DTtL0/1fk9dPRkkUmEDjWbk8/D17/+reahKm8bqAFI0ZDvpE7FvK66Vj//h+ZsmmaExLMkjS8cgeXcwU4mY2AADryPlu5YtF2Y9iEwT9GEWAGMzXH3+vFxKNmJdOq/P+SpRXTRzNEFGAheB4UqyvpYFWYaT/AxFtbPOA7ZDlAAAAAElFTkSuQmCC'); // wooden planks
+const texLog      = blockTex('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACX0lEQVR4nCWRW28TSRCF69I9Mx4bxx4b3zaEEMRN/AD4A/xnJMQbAoT2Ca20DyutgRCcmBBf8Hhmuru6kOFI9VY6db5T+OLZ/dNZ91aeTYr81Yf5k7PbsyJ/8/FiOswRkAmLo/bPvctTW9bN47sD8kFUtXbh5dv/iOB42Hn/z7fpIH90Mji/3ChA0c2Wq9IHuV5XzgdSlaqJjXOAdDbrWUO7yhlGy+xDFIk329p7QUQRRSR6eDpabSuRmKWm28mv1zUzAZCXiAjM1L+VOO9H/VbjZfFjbwhBFbI0PRlbyySqZ3/1AXS+2CIxMxtm1cOO9z4EISYcD9qAagze7rfKfR1CUFCJIhJVdVfug8Tlaq+A27IiRBgX7eVNicgI6oMA4PliM+tnhrGV2H8/rZzz+lvETIZ51M/LvYuqUeFi+fN0esTGGGsJAQH3Tu4dF8SkAEREAEB4EACEIEj0/2ItovPFhtkUXVvVLrG2ajwodDJLQWJUNcx14xer/fOn08vrcjJsS9QQPDMRMRHeHXesZUYy84tNZm2IERGdC9a0vPeg8fxyOxt223n6J32aWsM06KXkvEcAjRpjTKxhNq00vTcrgg9IGEXl4EVNE5zzWXIAg6KXHoB/T9RY1fWXq02SJInB5nBNQwifFuskMXXjjQJefN/dmfSMIefC9brO8wwAH54OvXfzb2uJiogPTvp3Jr3Xf8/JBx9EHp0UX6+2Eg/NgsKXxXpaZK3UHo+6hBBEljf1u49fp8MOHY97jLjaNs6L876smkGvFUTPr3YS4fPlxvnD19a7atRvTQZHvwB2D3n2p4IBngAAAABJRU5ErkJggg==');   // wood log
+const texSand     = blockTex('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACd0lEQVR4nAXBW2/cRBgA0Ll89oztWXt27d3UUamUSkWoKs/8Td544N8g8VaBEBeBUIWyzSYhMbF3xx7PxePhHPzxh2+bZo8xCqsDymY3WWuTNM1zsYawhJWuCNNke3Vz++lnxijZ1jIESxADIk53j8bYGGMIK8KSp7L94msMNAT3ePpDFGInawKIlaIpZWmcKiVPEuCcpwkYfe8XNT595jSPK3JGW6cZbKAfu8ldEkgxWREmLGXWWiDs9vjpVdtypotcCCHyjI+z+vXPn0DKyhjDoHDBSiEpBU4XhPDVvo0xOu+YQ3o6j3N/ff1mOA+k73tK6WUeD6+/UeYcwbpoJqN5nl5ft5xnzy8PJkyMczUOyxJAKSXYNszz/ecf+75LU+L9EuKKUOy6TorD4as33fMpxbmPbl8x/Ncv3+OIc15qp9a4em/rXVNV1dO/T5PyGBZCMUsZRSKvDsv0H6EAAEXGC8ElIwXBED08PfTeo9fv3k16opRa553Vajjq5Qxd9yyrnVLYIx3CwhPRD10ka5bx/vlY17UQQikFOHN+3Mic7PdXCWJ///M7WmCeTZ5nKYMMNrtyX24E5/xyOSNMZft+RevQD/i3j99J0fioLy86L3lYPVDqnU8YRygiFA9te3d7jJE4p/t+IIdd66OZramvJKHYLwvCpD8Pff+CMQkh3t0es1Rs2AYgbZoGZm8BM627+9NpXzeE0MX7L99+mNRUleWoRgsaIOpprLKdng1Evxq/5Izj7VYUjbMzJXGyQz/2gdiHh9OurlO8m8ezTW3BJJmXkQu6IuR9eHVzw0RyuShGC1GKTSE35Sah6bKaQjICuLs8/g9wlWtYt7OaoQAAAABJRU5ErkJggg==');   // sand → used for paths/plaza
+const texLeaves   = blockTex('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAChUlEQVR4nCWSSWsUURSF773v1dBVFdMk0RDnToxbFXEXcOFGd4HEAYc/4r9xI4i4cCkoRk1EEBRxIGqwNUkn1W3SU7qq3quq964U/oLznfMdPH+/3nqenbkTGc3tV2rwqzA5SB+nLnp7H7TRLH1EB7wJ0n/59GJAumeBgRwqhjaJTXRKOhGyZT0wtWnhRnjmbjR/OwIEIN7/ouXuS4UCet905612x/HktUD37Z+n6eQ5V3rU/ay9OqWxKXo8dysiFyQbJgfbb3UxtGwRCEzKACB9sgUXI5sPbZlathWnUSyFj43lEAB+PUrAQplw73uFXiYV6kGzzNrJ4UseCki2S+EjoQBnjPIhA4I3SVnHCIfIhf3PusyYXBQ+dN4pf0rsvlGqa2lsTuquiVey2oyQEbVX1eR5r7EUjn6beFWNn3WKgyqWmZ0xzGIjZxYCEMwIx674wsN4TTmHMIuZBJxaDLwJkQ+SZNOiAN1lGbB069Rfz9myzYHLqi4zmMwyQDliq0zaMuTgiauh7pnOe039db33UZUj7rxXWdukOybZLOM15U9RvKryoWELtRkBzCbjUbOUo98m27HCxXTbJH+MW8e9T9oobiyFtuDmkxQIUMBoq9xdUcAgJy+4w2Yxe71a9ueDUT5gGFRgKMBmzACzy2E+4O1naXBUNJZ9yv9fQ1ZSyMXZm+HZexFb2HiYqI5FhMqsBBRIEiuhDGxzjl9nh+ZdcoEcVPuWDeQD2/2aA7PV3P9RzN8Ljebm41SmLWNK6K0XVkNwRKQts/tasWW3TrUjQgZYZpzuGES0moPjROFxSQJsAf2N4mCrJLcad6whZ2+E0ws+Smy9UCbjZKvsf89nLtf+Aa3Emk7nToitAAAAAElFTkSuQmCC'); // leaves
 
+const grassMat = new THREE.MeshLambertMaterial({ map: texGrassTop });
 const mat = {
-  grass: [
-    new THREE.MeshLambertMaterial({ map: texDirt }), new THREE.MeshLambertMaterial({ map: texDirt }),
-    new THREE.MeshLambertMaterial({ map: texGrassTop }), new THREE.MeshLambertMaterial({ map: texDirt }),
-    new THREE.MeshLambertMaterial({ map: texDirt }), new THREE.MeshLambertMaterial({ map: texDirt }),
-  ],
+  // no separate dirt texture supplied → grass on all faces
+  grass:  [grassMat, grassMat, grassMat, grassMat, grassMat, grassMat],
   stone:  new THREE.MeshLambertMaterial({ map: texStone }),
   plank:  new THREE.MeshLambertMaterial({ map: texPlank }),
   leaves: new THREE.MeshLambertMaterial({ map: texLeaves }),
   log:    new THREE.MeshLambertMaterial({ map: texLog }),
-  path:   new THREE.MeshLambertMaterial({ map: texPath }),
+  path:   new THREE.MeshLambertMaterial({ map: texSand }),
 };
 
 /* ---------- World construction ---------- */
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const colliders = []; // AABB solids for player collision
+const SOLID = new Set(); // occupancy of solid cells "x,y,z" — used for headroom checks
+const solidAt = (x, y, z) => SOLID.has(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
+function addSolid(x, y, z) {
+  SOLID.add(`${x},${y},${z}`);
+  colliders.push({ min: new THREE.Vector3(x, y, z), max: new THREE.Vector3(x + 1, y + 1, z + 1) });
+}
 
 function block(x, y, z, material, solid = false) {
   const m = new THREE.Mesh(BOX, material);
   m.position.set(x + 0.5, y + 0.5, z + 0.5);
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
-  if (solid) colliders.push({ min: new THREE.Vector3(x, y, z), max: new THREE.Vector3(x + 1, y + 1, z + 1) });
+  if (solid) addSolid(x, y, z);
   return m;
 }
 
@@ -279,27 +335,86 @@ function makeBoardTexture(lines, opts = {}) {
   const W = 1024, H = 640;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
-  // plank background
-  g.fillStyle = opts.bg || '#caa46a';
-  g.fillRect(0, 0, W, H);
-  g.fillStyle = 'rgba(120,84,44,.4)';
-  for (let y = 0; y < H; y += 26) g.fillRect(0, y, W, 3);
-  // border
-  g.strokeStyle = opts.border || '#6b4a26'; g.lineWidth = 18;
-  g.strokeRect(9, 9, W - 18, H - 18);
-  g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 4;
-  g.strokeRect(24, 24, W - 48, H - 48);
 
-  let y = opts.padTop || 70;
-  for (const ln of lines) {
-    g.textAlign = ln.align || 'center';
-    const x = ln.align === 'left' ? 70 : (ln.align === 'right' ? W - 70 : W / 2);
-    g.font = `${ln.weight || 700} ${ln.size || 34}px 'Segoe UI', sans-serif`;
-    g.fillStyle = ln.color || '#2b1c0c';
-    if (ln.shadow) { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillText(ln.t, x + 2, y + 2); g.fillStyle = ln.color || '#2b1c0c'; }
-    g.fillText(ln.t, x, y);
-    y += (ln.lh || (ln.size || 34) + 14);
+  // --- parchment background with gradient + grain ---
+  if (opts.bg) { g.fillStyle = opts.bg; g.fillRect(0, 0, W, H); }
+  else {
+    const grad = g.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#f0e2bf'); grad.addColorStop(0.5, '#e4d2a6'); grad.addColorStop(1, '#d3bd8e');
+    g.fillStyle = grad; g.fillRect(0, 0, W, H);
+    // faint horizontal grain
+    g.fillStyle = 'rgba(150,110,60,.06)';
+    for (let yy = 14; yy < H; yy += 22) g.fillRect(0, yy, W, 2);
+    // soft vignette
+    const vg = g.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, W*0.62);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(70,45,15,.22)');
+    g.fillStyle = vg; g.fillRect(0, 0, W, H);
   }
+
+  // --- decorative double frame ---
+  g.strokeStyle = opts.border || '#5e3f1f'; g.lineWidth = 20;
+  g.strokeRect(11, 11, W - 22, H - 22);
+  g.strokeStyle = 'rgba(255,255,255,.10)'; g.lineWidth = 5;
+  g.strokeRect(26, 26, W - 52, H - 52);
+  g.strokeStyle = '#caa24a'; g.lineWidth = 3;                      // gold inner line
+  g.strokeRect(34, 34, W - 68, H - 68);
+  // corner rivets
+  const rivet = (cx, cy) => {
+    g.beginPath(); g.arc(cx, cy, 9, 0, Math.PI*2);
+    g.fillStyle = '#3a2510'; g.fill();
+    g.beginPath(); g.arc(cx-2, cy-2, 3.5, 0, Math.PI*2);
+    g.fillStyle = '#c9a85f'; g.fill();
+  };
+  [[22,22],[W-22,22],[22,H-22],[W-22,H-22]].forEach(p => rivet(p[0], p[1]));
+
+  // --- text + ornaments ---
+  let y = opts.padTop || 70;
+  lines.forEach((ln, idx) => {
+    g.textAlign = ln.align || 'center';
+    const cx = ln.align === 'left' ? 78 : (ln.align === 'right' ? W - 78 : W / 2);
+    const isHeader = /^\s*—.*—\s*$/.test(ln.t) || (typeof ln.t === 'string' && ln.t.startsWith('—'));
+    g.font = `${ln.weight || 700} ${ln.size || 34}px 'Georgia','Segoe UI',serif`;
+
+    // section header → gold pill with side rules
+    if (isHeader && ln.align !== 'left') {
+      const label = ln.t.replace(/—/g, '').trim();
+      g.font = `700 ${ln.size || 26}px 'Georgia',serif`;
+      const tw = g.measureText(label).width;
+      const half = tw/2 + 26;
+      g.strokeStyle = 'rgba(90,60,25,.5)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(90, y - (ln.size||26)/3); g.lineTo(cx - half, y - (ln.size||26)/3);
+      g.moveTo(cx + half, y - (ln.size||26)/3); g.lineTo(W - 90, y - (ln.size||26)/3); g.stroke();
+      // diamonds at ends
+      g.fillStyle = '#a9842f';
+      [[90, y-(ln.size||26)/3],[W-90, y-(ln.size||26)/3]].forEach(([dx,dy])=>{
+        g.save(); g.translate(dx,dy); g.rotate(Math.PI/4); g.fillRect(-5,-5,10,10); g.restore();
+      });
+      g.fillStyle = ln.color || '#1f6b3a';
+      g.fillText(label, cx, y);
+      y += (ln.lh || (ln.size || 26) + 14);
+      return;
+    }
+
+    // subtle shadow for all text
+    g.fillStyle = 'rgba(60,40,15,.28)';
+    g.fillText(ln.t, cx + 1.5, y + 1.5);
+    g.fillStyle = ln.color || '#2b1c0c';
+    g.fillText(ln.t, cx, y);
+
+    // underline ornament beneath a big title (first line, large)
+    if (idx === 0 && (ln.size || 34) >= 32 && ln.align !== 'left' && !opts.noTitleRule) {
+      const uy = y + 14;
+      const tw = Math.min(g.measureText(ln.t).width * 0.62, W - 200);
+      g.strokeStyle = '#a9842f'; g.lineWidth = 3;
+      g.beginPath(); g.moveTo(cx - tw/2, uy); g.lineTo(cx - 16, uy);
+      g.moveTo(cx + 16, uy); g.lineTo(cx + tw/2, uy); g.stroke();
+      g.fillStyle = '#a9842f';                                   // center diamond
+      g.save(); g.translate(cx, uy); g.rotate(Math.PI/4); g.fillRect(-6,-6,12,12); g.restore();
+      y += 16;
+    }
+    y += (ln.lh || (ln.size || 34) + 14);
+  });
+
   const t = new THREE.CanvasTexture(c);
   t.minFilter = THREE.LinearMipMapLinearFilter;
   t.anisotropy = 8;
@@ -336,7 +451,7 @@ function placeBoard(x, z, facing, lines, opts = {}) {
 
 // Decorative wall of stacked blocks behind a zone
 function zoneWall(cx, cz, facing, color) {
-  const len = 22, hgt = 5;
+  const len = 44, hgt = 5;
   for (let i = -len/2; i <= len/2; i++) for (let y = 0; y <= hgt; y++) {
     const useStone = (y === hgt) || (Math.abs(i) % 3 === 0);
     const off = new THREE.Vector3(i, 0, 0).applyAxisAngle(new THREE.Vector3(0,1,0), facing);
@@ -369,7 +484,7 @@ treeSpots.forEach(([x,z]) => tree(x, z));
 
 // ---- ZONE: ABOUT (west, -X) ----
 zoneWall(-30, 0, Math.PI/2, 0x6ab04c);
-placeBoard(-24, 0, Math.PI/2, [
+placeBoard(-24, 18, Math.PI/2, [
   { t: 'ABOUT', size: 40, color:'#3a2510', weight:800, lh:60 },
   { t: 'I build companies the way most kids', size: 30 },
   { t: 'build playlists. By 15: five ventures,', size: 30 },
@@ -378,7 +493,7 @@ placeBoard(-24, 0, Math.PI/2, [
   { t: 'analyzing pitch decks before homework.', size: 30 },
 ], { w: 8.5, h: 5, baseY: 1.6 });
 
-placeBoard(-24, 8, Math.PI/2, [
+placeBoard(-24, 6, Math.PI/2, [
   { t: 'MY EDGE — VIBE CODING', size: 36, color:'#3a2510', weight:800, lh:56 },
   { t: 'Orchestrating AI agents to design,', size: 30 },
   { t: 'ship & iterate at a velocity solo', size: 30 },
@@ -387,7 +502,7 @@ placeBoard(-24, 8, Math.PI/2, [
   { t: 'Pitching = a contact sport.', size: 28, color:'#5a3a18' },
 ], { w: 8.5, h: 5, baseY: 1.6 });
 
-placeBoard(-24, -8, Math.PI/2, [
+placeBoard(-24, -6, Math.PI/2, [
   { t: 'FOUNDER STACK', size: 34, color:'#3a2510', weight:800, lh:50 },
   { t: 'Product Design (Figma) · Fundraising', size: 27 },
   { t: 'Business Dev · Operations · VC Scouting', size: 27 },
@@ -399,7 +514,7 @@ placeBoard(-24, -8, Math.PI/2, [
   { t: 'Hyperspectral · Predictive analytics', size: 25 },
 ], { w: 9, h: 5.6, baseY: 1.5, padTop: 56 });
 
-placeBoard(-24, -16, Math.PI/2, [
+placeBoard(-24, -18, Math.PI/2, [
   { t: 'LANGUAGES', size: 36, color:'#3a2510', weight:800, lh:64 },
   { t: 'Kazakh — Native', size: 32, lh:52 },
   { t: 'Russian — Native', size: 32, lh:52 },
@@ -409,17 +524,17 @@ placeBoard(-24, -16, Math.PI/2, [
 // ---- ZONE: VENTURES (east, +X) ----
 zoneWall(30, 0, -Math.PI/2, 0x4c6ab0);
 const ventures = [
-  { z: -16, t: '01 · EXTENSY.DEV', role:'CEO & Co-Founder', lines:[
+  { z: -18, t: '01 · EXTENSY.DEV', role:'CEO & Co-Founder', lines:[
       '“Lovable for Chrome Extensions”', 'Multi-agent AI that builds & installs',
       'a browser extension in under 2 minutes.', '200+ users week one · $75+ MRR',
       '1,500+ launch views' ] },
   { z: -6, t: '02 · SUBSISYS', role:'CEO & Founder', lines:[
       'AI subsidy-scoring engine for agriculture.', 'XGBoost models that automate government',
       'subsidy allocation for farmers.', 'Decentrathon 5.0 — inDrive track' ] },
-  { z: 4, t: '03 · LITHOS DIGITAL SCOUT', role:'CEO & Lead Researcher', lines:[
+  { z: 6, t: '03 · LITHOS DIGITAL SCOUT', role:'CEO & Lead Researcher', lines:[
       'B2B SaaS: ML + computer vision on', 'satellite imagery to predict lithium',
       'deposits — without a single drill.', 'Functional MVP · Mining-corp pipeline' ] },
-  { z: 14, t: '04 · APLYX · TEROMI · LOOK LAB', role:'Founder · Scent for You', lines:[
+  { z: 18, t: '04 · APLYX · TEROMI · LOOK LAB', role:'Founder · Scent for You', lines:[
       'A portfolio across B2B SaaS, strategic', 'partnerships & two profitable e-com',
       'stores with international logistics.', 'Teromi pilot secured · End-to-end ops' ] },
 ];
@@ -435,10 +550,10 @@ ventures.forEach(v => {
 // ---- ZONE: HONORS (south, +Z) ----
 zoneWall(0, 30, 0, 0xb0a04c);
 const honors = [
-  { x: -12, title:'PLUG AND PLAY', sub:'ACCELERATOR', d:'Selected for the international program' },
-  { x: -4,  title:'HACKATHON', sub:'CHAMPION', d:'$500+ combined prize pool' },
-  { x: 4,   title:'ASTANA HUB', sub:'PIZZA PITCH', d:'Live-pitched 5 investors in a day' },
-  { x: 12,  title:'WORLD ROBOT', sub:'OLYMPIAD · FLL', d:'9th of 250+ teams, Central Asia' },
+  { x: -15, title:'PLUG AND PLAY', sub:'ACCELERATOR', d:'Selected for the international program' },
+  { x: -5,  title:'HACKATHON', sub:'CHAMPION', d:'$500+ combined prize pool' },
+  { x: 5,   title:'ASTANA HUB', sub:'PIZZA PITCH', d:'Live-pitched 5 investors in a day' },
+  { x: 15,  title:'WORLD ROBOT', sub:'OLYMPIAD · FLL', d:'9th of 250+ teams, Central Asia' },
 ];
 honors.forEach(h => {
   placeBoard(h.x, 24, Math.PI, [
@@ -485,6 +600,166 @@ signpost(0, 7, 'HONORS', '#8a6b1f');
 signpost(0, -7, 'CONTACT', '#8a1f6b');
 
 /* =========================================================
+   BIG STRUCTURES — mansion + beach (batched via InstancedMesh)
+   ========================================================= */
+const matGlass = new THREE.MeshLambertMaterial({ color:0xbfe3f2, transparent:true, opacity:0.5 });
+const matRoof  = new THREE.MeshLambertMaterial({ color:0x8a3b2e });
+const matWhite = new THREE.MeshLambertMaterial({ color:0xe9e2d0 });
+const matRed   = new THREE.MeshLambertMaterial({ color:0xc0392b });
+const matWater = new THREE.MeshLambertMaterial({ color:0x2a86d8, transparent:true, opacity:0.72 });
+
+// Batch builder: collect 1×1 cubes per material, emit one InstancedMesh each.
+const STRUCT = new Map();
+function brick(x, y, z, m, solid = true) {
+  if (!m) return;
+  if (!STRUCT.has(m)) STRUCT.set(m, []);
+  STRUCT.get(m).push([x, y, z]);
+  if (solid) addSolid(x, y, z);
+}
+function slab(x0, z0, x1, z1, y, m, solid = true) {
+  for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) brick(x, y, z, m, solid);
+}
+function buildStruct() {
+  const dummy = new THREE.Object3D();
+  for (const [m, list] of STRUCT) {
+    const im = new THREE.InstancedMesh(BOX, m, list.length);
+    im.castShadow = true; im.receiveShadow = true;
+    list.forEach(([x, y, z], i) => { dummy.position.set(x+0.5, y+0.5, z+0.5); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix); });
+    im.instanceMatrix.needsUpdate = true;
+    scene.add(im);
+  }
+  STRUCT.clear();
+}
+
+/* ---------------- MANSION (north, behind CONTACT) ---------------- */
+(function mansion() {
+  const X0 = -13, X1 = 13, Z0 = -67, Z1 = -45;     // footprint, front wall at Z1 (faces +Z)
+  const win = (a) => a === 2 || a === 3;            // window rows
+
+  slab(X0, Z0, X1, Z1, 0, mat.stone);              // foundation platform (top = 1 = floor)
+
+  // ---- ground floor walls (y 1..4) ----
+  for (let y = 1; y <= 4; y++) {
+    for (let x = X0; x <= X1; x++) {
+      const door = (x >= -1 && x <= 1 && y <= 3);                 // front doorway
+      const fwin = (Math.abs(x) === 6 || Math.abs(x) === 10) && win(y);
+      brick(x, y, Z1, door ? null : (fwin ? matGlass : matWhite));
+      brick(x, y, Z0, (Math.abs(x) === 6 || Math.abs(x) === 10) && win(y) ? matGlass : matWhite);
+    }
+    for (let z = Z0 + 1; z < Z1; z++) {
+      const swin = (z % 4 === 0) && win(y);
+      brick(X0, y, z, swin ? matGlass : matWhite);
+      brick(X1, y, z, swin ? matGlass : matWhite);
+    }
+  }
+  // corner pillars (logs)
+  for (let y = 1; y <= 5; y++) [[X0,Z0],[X1,Z0],[X0,Z1],[X1,Z1]].forEach(([x,z]) => brick(x,y,z,mat.log));
+
+  // interior partition (front/back) at z = -56 with central doorway
+  for (let y = 1; y <= 4; y++) for (let x = X0+1; x <= X1-1; x++) {
+    if (x >= -1 && x <= 1 && y <= 3) continue;       // doorway
+    brick(x, y, -56, mat.plank);
+  }
+
+  // ---- second-floor slab (y = 5), with stairwell hole back-left ----
+  for (let x = X0+1; x <= X1-1; x++) for (let z = Z0+1; z <= Z1-1; z++) {
+    if (x >= X0+1 && x <= X0+5 && z >= Z0+1 && z <= Z0+5) continue;  // stairwell opening
+    brick(x, 5, z, mat.plank);
+  }
+  // staircase 1→2 (rises in +X near back wall, 2 wide)
+  for (let i = 0; i < 5; i++) { brick(X0+1+i, 1+i, Z0+2, mat.plank); brick(X0+1+i, 1+i, Z0+3, mat.plank); }
+
+  // ---- upper floor walls (y 6..9) ----
+  for (let y = 6; y <= 9; y++) {
+    for (let x = X0; x <= X1; x++) {
+      const bal = (x >= -1 && x <= 1 && y <= 8);                  // front balcony door (glass)
+      const fwin = (Math.abs(x) === 6 || Math.abs(x) === 10) && (y === 7 || y === 8);
+      brick(x, y, Z1, bal ? matGlass : (fwin ? matGlass : matWhite));
+      brick(x, y, Z0, (Math.abs(x) === 6 || Math.abs(x) === 10) && (y === 7 || y === 8) ? matGlass : matWhite);
+    }
+    for (let z = Z0+1; z < Z1; z++) {
+      const swin = (z % 4 === 0) && (y === 7 || y === 8);
+      brick(X0, y, z, swin ? matGlass : matWhite);
+      brick(X1, y, z, swin ? matGlass : matWhite);
+    }
+  }
+  for (let y = 6; y <= 9; y++) [[X0,Z0],[X1,Z0],[X0,Z1],[X1,Z1]].forEach(([x,z]) => brick(x,y,z,mat.log));
+
+  // upper partition + bed/rug (a bedroom)
+  for (let y = 6; y <= 9; y++) for (let x = X0+1; x <= X1-1; x++) {
+    if (x >= -1 && x <= 1 && y <= 8) continue;
+    brick(x, y, -56, mat.plank);
+  }
+  brick(8, 6, -64, matWhite); brick(9, 6, -64, matWhite);        // bed pillow
+  for (let z = -63; z >= -65; z--) { brick(8, 6, z, matRed); brick(9, 6, z, matRed); } // bed
+
+  // downstairs long table
+  for (let x = -3; x <= 3; x++) brick(x, 1, -50, mat.log);
+
+  // ---- stepped roof ----
+  slab(X0, Z0, X1, Z1, 10, matRoof);
+  slab(X0+2, Z0+2, X1-2, Z1-2, 11, matRoof);
+  slab(X0+4, Z0+4, X1-4, Z1-4, 12, matRoof);
+  slab(X0+6, Z0+6, X1-6, Z1-6, 13, matRoof);
+
+  // little welcome sign on the lawn in front of the door
+})();
+placeBoard(0, -42, 0, [
+  { t: 'THE MANSION', size: 38, color:'#3a2510', weight:800, lh:58 },
+  { t: 'Two floors · explore every room', size: 26, color:'#5a3a18', lh:46 },
+  { t: 'Walk in through the front door →', size: 24, color:'#1f6b3a' },
+], { w: 7, h: 3.6, baseY: 1.2 });
+
+/* ---------------- BEACH (south, beyond HONORS) ---------------- */
+(function beach() {
+  // flat sand + water planes (flush with the ground, no step)
+  const sandTex = texSand.clone(); sandTex.needsUpdate = true;
+  sandTex.wrapS = sandTex.wrapT = THREE.RepeatWrapping; sandTex.repeat.set(11, 8);
+  const sand = new THREE.Mesh(new THREE.PlaneGeometry(44, 32),
+    new THREE.MeshLambertMaterial({ map: sandTex }));
+  sand.rotation.x = -Math.PI/2; sand.position.set(0, 0.02, 46); sand.receiveShadow = true;
+  scene.add(sand);
+
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(80, 40), matWater);
+  water.rotation.x = -Math.PI/2; water.position.set(0, 0.08, 78); scene.add(water);
+
+  // sun lounger: plank base + raised headrest + colored towel
+  function bed(x, z, towel) {
+    for (let i = 0; i < 4; i++) brick(x, 0, z + i, mat.plank);
+    brick(x, 1, z, mat.plank);                 // headrest
+    brick(x, 0, z + 1, towel); brick(x, 0, z + 2, towel);
+  }
+  bed(-8, 50, matRed); bed(-5, 50, matWhite); bed(4, 50, matRed); bed(7, 50, matWhite);
+
+  // parasols (pole + canopy)
+  function parasol(x, z) {
+    for (let y = 1; y <= 3; y++) brick(x, y, z, mat.log);
+    slab(x-1, z-1, x+1, z+1, 4, matRed);
+    brick(x, 4, z, matRed);
+  }
+  parasol(-6, 49); parasol(6, 49);
+
+  // beach bar: counter (2 high) with a thatch roof on posts
+  for (let x = -4; x <= 4; x++) { brick(x, 0, 56, mat.log); brick(x, 1, 56, mat.plank); brick(x, 2, 56, matWhite, false); }
+  for (let x = -4; x <= 4; x += 2) brick(x, 0, 58, mat.log);           // stools row (behind bar)
+  // posts + thatch roof
+  [[-5,55],[5,55],[-5,57],[5,57]].forEach(([x,z]) => { for (let y=1;y<=3;y++) brick(x,y,z,mat.log); });
+  slab(-6, 54, 6, 58, 4, mat.leaves);
+  slab(-5, 55, 5, 57, 5, mat.leaves);
+
+  placeBoard(0, 60.5, Math.PI, [
+    { t: 'THE BEACH BAR', size: 36, color:'#3a2510', weight:800, lh:54 },
+    { t: 'Loungers · parasols · cold drinks', size: 24, color:'#5a3a18' },
+  ], { w: 7, h: 3, baseY: 3.2 });
+})();
+
+buildStruct();
+
+// extra signposts toward the new areas
+signpost(0, -10, 'MANSION ↑', '#5a3a18');
+signpost(0, 10, 'BEACH ↓', '#1f6b8a');
+
+/* =========================================================
    FIRST-PERSON CONTROLLER (pointer lock + collisions)
    ========================================================= */
 const player = {
@@ -518,6 +793,70 @@ muteBtn.addEventListener('click', (e) => {
   musicOn = !musicOn;
   if (musicOn) { bgm.play().catch(() => {}); muteBtn.textContent = '🔊'; }
   else { bgm.pause(); muteBtn.textContent = '🔇'; }
+});
+
+// ---- Minecraft menu buttons ----
+const ctrlBtn = document.getElementById('ctrlBtn');
+const controlsBox = document.getElementById('controlsBox');
+ctrlBtn.addEventListener('click', () => controlsBox.classList.toggle('show'));
+
+const menuMusicBtn = document.getElementById('menuMusicBtn');
+menuMusicBtn.addEventListener('click', () => {
+  musicOn = !musicOn;
+  menuMusicBtn.textContent = 'Музыка: ' + (musicOn ? 'Вкл' : 'Выкл');
+  muteBtn.textContent = musicOn ? '🔊' : '🔇';
+  if (musicOn) bgm.play().catch(() => {}); else bgm.pause();
+});
+
+document.getElementById('quitBtn').addEventListener('click', () =>
+  window.open('https://linkedin.com/in/temirlan-kalmukhan', '_blank'));
+
+// Knock out the white background of the TEMIRCRAFT logo → transparent.
+(function dewhiteLogo() {
+  const img = document.getElementById('logoImg');
+  if (!img) return;
+  const process = () => {
+    try {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const data = g.getImageData(0, 0, c.width, c.height);
+      const d = data.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], gr = d[i+1], b = d[i+2];
+        const minc = Math.min(r, gr, b);
+        if (minc > 228) d[i+3] = 0;                       // pure white → transparent
+        else if (minc > 200) d[i+3] = (228 - minc) * 8;   // feather near-white edges
+      }
+      g.putImageData(data, 0, 0);
+      img.src = c.toDataURL('image/png');
+    } catch (_) { /* canvas tainted (file://) — keep original */ }
+  };
+  if (img.complete && img.naturalWidth) process();
+  else img.addEventListener('load', process, { once: true });
+})();
+
+// Rotating splash texts (like the yellow Minecraft splash)
+const splashes = ['Vibe coded!', 'Built by AI agents!', '5 ventures by 15!',
+  '200+ users week one!', 'Lovable for extensions!', 'Pitching is a contact sport!',
+  'Astana, Kazakhstan!', 'Walk the four paths!', '100% voxels!'];
+const splashEl = document.getElementById('splash');
+let splashIdx = 0;
+setInterval(() => { splashIdx = (splashIdx + 1) % splashes.length;
+  splashEl.textContent = splashes[splashIdx]; }, 3000);
+
+// Esc opens/closes the menu (pause)
+function openMenu() {
+  overlay.classList.remove('hidden');
+  if (document.pointerLockElement) document.exitPointerLock();
+  dragging = false;
+}
+addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') {
+    if (overlay.classList.contains('hidden')) openMenu();
+    else playBtn.click();
+  }
 });
 
 playBtn.addEventListener('click', () => {
@@ -612,20 +951,42 @@ if (isTouch) {
 }
 
 /* ---------- Collision (swept AABB against block colliders) ---------- */
+const STEP = 1.05; // auto-step height (climb stairs / 1-block ledges)
+
+// A block is steppable only if there's headroom above it for the player —
+// this lets you walk up stairs/ledges but NOT climb solid walls.
+function steppable(c) {
+  const bx = Math.floor(c.min.x), by = Math.floor(c.min.y), bz = Math.floor(c.min.z);
+  return !solidAt(bx, by + 1, bz) && !solidAt(bx, by + 2, bz);
+}
+
+// Horizontal collision with auto-step.
 function collide(pos) {
   const r = player.radius, ph = player.height;
+  const feet = pos.y - ph, head = pos.y;
   for (const c of colliders) {
     const minX = c.min.x - r, maxX = c.max.x + r;
     const minZ = c.min.z - r, maxZ = c.max.z + r;
-    const feet = pos.y - ph, head = pos.y;
     if (pos.x > minX && pos.x < maxX && pos.z > minZ && pos.z < maxZ &&
         head > c.min.y && feet < c.max.y) {
-      // push out along least-penetration axis (X or Z only — keeps it simple/solid)
+      if (c.max.y <= feet + STEP && steppable(c)) continue;  // step up onto it
       const pX = pos.x < (c.min.x+c.max.x)/2 ? minX - pos.x : maxX - pos.x;
       const pZ = pos.z < (c.min.z+c.max.z)/2 ? minZ - pos.z : maxZ - pos.z;
       if (Math.abs(pX) < Math.abs(pZ)) pos.x += pX; else pos.z += pZ;
     }
   }
+}
+
+// Highest standable surface under the player's center.
+function supportHeight(pos) {
+  let h = 0; // world ground
+  const feet = pos.y - player.height;
+  for (const c of colliders) {
+    if (pos.x > c.min.x && pos.x < c.max.x && pos.z > c.min.z && pos.z < c.max.z) {
+      if (c.max.y <= feet + STEP && c.max.y > h && steppable(c)) h = c.max.y;
+    }
+  }
+  return h;
 }
 
 /* ---------- Zone detection for HUD toast ---------- */
@@ -667,6 +1028,8 @@ const teleports = [
   { name:'VENTURES', sub:'II',    x: 18, z: -1,  yaw: -Math.PI / 2 },   // 2 · 🚀
   { name:'HONORS',   sub:'III',   x: 0,  z: 18,  yaw: Math.PI },        // 3 · 🏆
   { name:'CONTACT',  sub:'IV',    x: 0,  z: -18, yaw: 0 },              // 4 · ✉️
+  { name:'MANSION',  sub:'HOME',  x: 0,  z: -43, yaw: 0 },              // 5 · 🏰 (front door)
+  { name:'BEACH',    sub:'BAR',   x: 0,  z: 44,  yaw: Math.PI },        // 6 · 🏖️
 ];
 function teleportTo(i) {
   const t = teleports[i];
@@ -686,7 +1049,8 @@ function teleportTo(i) {
   clearTimeout(toast._t); toast._t = setTimeout(() => toast.classList.remove('show'), 2000);
 }
 addEventListener('keydown', e => {
-  const n = { Digit1:0, Numpad1:0, Digit2:1, Numpad2:1, Digit3:2, Numpad3:2, Digit4:3, Numpad4:3 }[e.code];
+  const n = { Digit1:0, Numpad1:0, Digit2:1, Numpad2:1, Digit3:2, Numpad3:2, Digit4:3, Numpad4:3,
+              Digit5:4, Numpad5:4, Digit6:5, Numpad6:5 }[e.code];
   if (n !== undefined) teleportTo(n);
 });
 // also let clicking a hotbar slot teleport (handy on laptop/touch)
@@ -699,15 +1063,18 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
 
+  // paused while the menu is open
+  const paused = !overlay.classList.contains('hidden');
+
   // movement input
   const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
   const right   = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
   const move = new THREE.Vector3();
-  if (keys['KeyW']) move.add(forward);
-  if (keys['KeyS']) move.sub(forward);
-  if (keys['KeyD']) move.add(right);
-  if (keys['KeyA']) move.sub(right);
-  if (isTouch && (joy.dx || joy.dy)) { move.add(forward.clone().multiplyScalar(-joy.dy)); move.add(right.clone().multiplyScalar(joy.dx)); }
+  if (!paused && keys['KeyW']) move.add(forward);
+  if (!paused && keys['KeyS']) move.sub(forward);
+  if (!paused && keys['KeyD']) move.add(right);
+  if (!paused && keys['KeyA']) move.sub(right);
+  if (!paused && isTouch && (joy.dx || joy.dy)) { move.add(forward.clone().multiplyScalar(-joy.dy)); move.add(right.clone().multiplyScalar(joy.dx)); }
   if (move.lengthSq() > 0) move.normalize();
 
   const sprint = keys['ShiftLeft'] || keys['ShiftRight'] ? 1.7 : 1;
@@ -715,7 +1082,7 @@ function animate() {
   player.vel.x = move.x * speed;
   player.vel.z = move.z * speed;
 
-  if (keys['Space'] && player.onGround) { player.vel.y = 7.4; player.onGround = false; }
+  if (!paused && keys['Space'] && player.onGround) { player.vel.y = 7.4; player.onGround = false; }
   player.vel.y -= 22 * dt; // gravity
 
   // integrate with axis-separated collision
@@ -723,8 +1090,13 @@ function animate() {
   player.pos.z += player.vel.z * dt; collide(player.pos);
   player.pos.y += player.vel.y * dt;
 
-  // ground at y = floor top (0) → eye height 1.7
-  if (player.pos.y <= player.height) { player.pos.y = player.height; player.vel.y = 0; player.onGround = true; }
+  // land on the highest block surface beneath us (enables floors / stairs)
+  const floorY = supportHeight(player.pos);
+  if (player.pos.y - player.height <= floorY) {
+    player.pos.y = floorY + player.height; player.vel.y = 0; player.onGround = true;
+  } else {
+    player.onGround = false;
+  }
 
   // keep inside world
   const lim = WORLD - 2;
