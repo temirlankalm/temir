@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Temirlan Kalmukhan — Voxel Portfolio</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #87b5e8; font-family: 'Segoe UI', system-ui, sans-serif; }
+  canvas { display: block; }
+
+  /* ---------- HUD ---------- */
+  #crosshair {
+    position: fixed; left: 50%; top: 50%; width: 22px; height: 22px;
+    transform: translate(-50%, -50%); pointer-events: none; z-index: 20; opacity: .75;
+  }
+  #crosshair::before, #crosshair::after {
+    content: ""; position: absolute; background: #fff; box-shadow: 0 0 2px rgba(0,0,0,.6);
+  }
+  #crosshair::before { left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); }
+  #crosshair::after  { top: 50%; left: 0; height: 2px; width: 100%; transform: translateY(-50%); }
+
+  #hotbar {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 4px; padding: 4px; background: rgba(0,0,0,.35);
+    border: 2px solid rgba(0,0,0,.5); border-radius: 4px; z-index: 20; pointer-events: none;
+  }
+  .slot {
+    width: 46px; height: 46px; border: 2px solid #5a5a5a; background: rgba(139,139,139,.5);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .slot.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.3) inset; }
+  .slot { position: relative; }
+  .slot .num { position: absolute; top: 1px; left: 3px; font-size: 10px; font-weight: 700;
+               color: #fff; text-shadow: 0 1px 2px #000; }
+
+  #compass {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-weight: 700; letter-spacing: 3px; text-shadow: 0 2px 4px rgba(0,0,0,.6);
+    z-index: 20; pointer-events: none; font-size: 14px; background: rgba(0,0,0,.25);
+    padding: 6px 16px; border-radius: 999px;
+  }
+
+  #zoneToast {
+    position: fixed; top: 56px; left: 50%; transform: translateX(-50%) translateY(-10px);
+    color: #fff; z-index: 20; pointer-events: none; text-align: center; opacity: 0;
+    transition: opacity .4s, transform .4s; text-shadow: 0 2px 6px rgba(0,0,0,.7);
+  }
+  #zoneToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #zoneToast .big { font-size: 30px; font-weight: 800; letter-spacing: 1px; }
+  #zoneToast .small { font-size: 13px; opacity: .85; margin-top: 2px; letter-spacing: 4px; text-transform: uppercase; }
+
+  /* ---------- Overlay / menu ---------- */
+  #overlay {
+    position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, rgba(20,40,70,.55), rgba(8,14,24,.92));
+    backdrop-filter: blur(3px); transition: opacity .35s; color: #eaf2ff;
+  }
+  #overlay.hidden { opacity: 0; pointer-events: none; }
+  .panel {
+    width: min(560px, 90vw); background: rgba(15,22,36,.85); border: 2px solid rgba(120,160,220,.35);
+    border-radius: 14px; padding: 30px 34px 26px; box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    text-align: center;
+  }
+  .panel h1 { font-size: clamp(26px, 5vw, 40px); font-weight: 800; letter-spacing: .5px; }
+  .panel .sub { color: #8fb4e8; margin-top: 4px; font-size: 14px; letter-spacing: 5px; text-transform: uppercase; }
+  .panel p { color: #b9c6dc; margin-top: 16px; line-height: 1.6; font-size: 14.5px; }
+  .keys { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0 6px; }
+  .key { background: #1d2940; border: 1px solid #36507a; border-bottom-width: 3px; border-radius: 6px;
+         padding: 7px 11px; font-size: 12px; color: #d8e6ff; min-width: 30px; }
+  #playBtn {
+    margin-top: 22px; padding: 14px 38px; font-size: 16px; font-weight: 700; letter-spacing: 1px;
+    color: #06210f; background: linear-gradient(#7be08a, #4cc46a); border: none; border-bottom: 4px solid #2f8f49;
+    border-radius: 9px; cursor: pointer; text-transform: uppercase; transition: transform .1s, filter .15s;
+  }
+  #playBtn:hover { filter: brightness(1.06); }
+  #playBtn:active { transform: translateY(2px); border-bottom-width: 2px; }
+  .credit { margin-top: 18px; font-size: 11px; color:#5d728f; letter-spacing: 2px; }
+
+  /* ---------- Mobile controls ---------- */
+  #touchUI { position: fixed; inset: 0; z-index: 15; display: none; pointer-events: none; }
+  #joy { position: absolute; left: 26px; bottom: 90px; width: 120px; height: 120px;
+         border-radius: 50%; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.3);
+         pointer-events: auto; }
+  #joyKnob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%;
+             background: rgba(255,255,255,.5); }
+  #jumpBtn { position: absolute; right: 30px; bottom: 110px; width: 84px; height: 84px; border-radius: 50%;
+             background: rgba(124,224,138,.4); border: 2px solid rgba(255,255,255,.5); color: #fff;
+             font-weight: 800; font-size: 14px; pointer-events: auto; display:flex;align-items:center;justify-content:center; }
+  body.touch #touchUI { display: block; }
+
+  #loading { position: fixed; inset: 0; z-index: 60; background: #0b1320; color: #9fc3ff;
+             display: flex; align-items: center; justify-content: center; font-size: 14px; letter-spacing: 3px; }
+</style>
+</head>
+<body>
+  <div id="loading">LOADING WORLD…</div>
+
+  <div id="compass">N</div>
+  <div id="crosshair"></div>
+  <div id="zoneToast"><div class="big"></div><div class="small"></div></div>
+
+  <div id="hotbar">
+    <div class="slot active"><span class="num">1</span>🏠</div>
+    <div class="slot"><span class="num">2</span>🚀</div>
+    <div class="slot"><span class="num">3</span>🏆</div>
+    <div class="slot"><span class="num">4</span>✉️</div>
+  </div>
+
+  <div id="touchUI">
+    <div id="joy"><div id="joyKnob"></div></div>
+    <div id="jumpBtn">JUMP</div>
+  </div>
+
+  <div id="overlay">
+    <div class="panel">
+      <h1>TEMIRLAN KALMUKHAN</h1>
+      <div class="sub">Voxel Portfolio</div>
+      <p>Walk through a Minecraft-style world. Each zone is a chapter of my story —
+         read the boards: <b>About</b>, <b>Ventures</b>, <b>Honors</b>, <b>Contact</b>.</p>
+      <div class="keys">
+        <span class="key">W A S D — move</span>
+        <span class="key">Mouse / hold-drag — look</span>
+        <span class="key">Space — jump</span>
+        <span class="key">Shift — sprint</span>
+        <span class="key">Esc — menu</span>
+        <span class="key">1·2·3·4 — teleport to zone</span>
+      </div>
+      <button id="playBtn">▶ Enter World</button>
+      <div class="credit">© MMXXVI · Astana, Kazakhstan</div>
+    </div>
+  </div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* =========================================================
+   TEMIRLAN KALMUKHAN — VOXEL PORTFOLIO
+   A first-person Minecraft-style walkable world.
+   ========================================================= */
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8fc4f0);
+scene.fog = new THREE.Fog(0x8fc4f0, 40, 130);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+/* ---------- Lighting ---------- */
+const sun = new THREE.DirectionalLight(0xfff4e0, 2.1);
+sun.position.set(40, 70, 25);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+const s = 90;
+sun.shadow.camera.left = -s; sun.shadow.camera.right = s;
+sun.shadow.camera.top = s; sun.shadow.camera.bottom = -s;
+sun.shadow.camera.far = 220; sun.shadow.bias = -0.0004;
+scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xcfe8ff, 0x4a6a3a, 0.85));
+scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+/* ---------- Procedural pixel textures ---------- */
+function pixelTexture(draw, size = 16) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  draw(g, size);
+  const t = new THREE.CanvasTexture(c);
+  t.magFilter = THREE.NearestFilter;
+  t.minFilter = THREE.NearestFilter;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+function noiseFill(g, size, base, vary) {
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const n = (Math.random() - 0.5) * vary;
+    const r = clamp(base[0] + n), gr = clamp(base[1] + n), b = clamp(base[2] + n);
+    g.fillStyle = `rgb(${r|0},${gr|0},${b|0})`;
+    g.fillRect(x, y, 1, 1);
+  }
+}
+const clamp = v => Math.max(0, Math.min(255, v));
+
+const texGrassTop = pixelTexture(g => noiseFill(g, 16, [96, 168, 78], 34));
+const texDirt     = pixelTexture(g => noiseFill(g, 16, [134, 96, 62], 30));
+const texStone    = pixelTexture(g => noiseFill(g, 16, [128, 128, 132], 26));
+const texPlank    = pixelTexture((g, size) => {
+  noiseFill(g, size, [176, 138, 86], 16);
+  g.fillStyle = 'rgba(90,62,34,.55)';
+  for (let y = 0; y < size; y += 4) g.fillRect(0, y, size, 1);
+  g.fillRect(7, 0, 1, size);
+});
+const texLeaves = pixelTexture(g => noiseFill(g, 16, [54, 122, 48], 40));
+const texLog    = pixelTexture((g, size) => {
+  noiseFill(g, size, [110, 78, 48], 18);
+  g.fillStyle = 'rgba(70,48,28,.5)';
+  for (let x = 0; x < size; x += 3) g.fillRect(x, 0, 1, size);
+});
+const texPath = pixelTexture(g => noiseFill(g, 16, [150, 140, 110], 22));
+
+const mat = {
+  grass: [
+    new THREE.MeshLambertMaterial({ map: texDirt }), new THREE.MeshLambertMaterial({ map: texDirt }),
+    new THREE.MeshLambertMaterial({ map: texGrassTop }), new THREE.MeshLambertMaterial({ map: texDirt }),
+    new THREE.MeshLambertMaterial({ map: texDirt }), new THREE.MeshLambertMaterial({ map: texDirt }),
+  ],
+  stone:  new THREE.MeshLambertMaterial({ map: texStone }),
+  plank:  new THREE.MeshLambertMaterial({ map: texPlank }),
+  leaves: new THREE.MeshLambertMaterial({ map: texLeaves }),
+  log:    new THREE.MeshLambertMaterial({ map: texLog }),
+  path:   new THREE.MeshLambertMaterial({ map: texPath }),
+};
+
+/* ---------- World construction ---------- */
+const BOX = new THREE.BoxGeometry(1, 1, 1);
+const colliders = []; // AABB solids for player collision
+
+function block(x, y, z, material, solid = false) {
+  const m = new THREE.Mesh(BOX, material);
+  m.position.set(x + 0.5, y + 0.5, z + 0.5);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m);
+  if (solid) colliders.push({ min: new THREE.Vector3(x, y, z), max: new THREE.Vector3(x + 1, y + 1, z + 1) });
+  return m;
+}
+
+// Instanced ground for performance: big grass field
+const WORLD = 64; // half-extent
+(function buildGround() {
+  const count = (WORLD * 2) * (WORLD * 2);
+  const top = new THREE.InstancedMesh(BOX, [
+    mat.grass[0], mat.grass[1], mat.grass[2], mat.grass[3], mat.grass[4], mat.grass[5]
+  ], count);
+  top.receiveShadow = true; top.castShadow = false;
+  const dummy = new THREE.Object3D();
+  let i = 0;
+  for (let x = -WORLD; x < WORLD; x++) for (let z = -WORLD; z < WORLD; z++) {
+    dummy.position.set(x + 0.5, -0.5, z + 0.5);
+    dummy.updateMatrix();
+    top.setMatrixAt(i++, dummy.matrix);
+  }
+  scene.add(top);
+})();
+
+// Stone plaza ring + paths
+function fillRect(x0, z0, x1, z1, y, material, solid=false) {
+  for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) block(x, y, z, material, solid);
+}
+
+// Central plaza
+fillRect(-6, -6, 6, 6, 0, mat.path);
+// Four paths radiating out (to each zone)
+for (let i = 7; i <= 22; i++) {
+  block(i, 0, -1, mat.path); block(i, 0, 0, mat.path); block(i, 0, 1, mat.path);   // +X (Ventures)
+  block(-i, 0, -1, mat.path); block(-i, 0, 0, mat.path); block(-i, 0, 1, mat.path); // -X (About)
+  block(-1, 0, i, mat.path); block(0, 0, i, mat.path); block(1, 0, i, mat.path);     // +Z (Honors)
+  block(-1, 0, -i, mat.path); block(0, 0, -i, mat.path); block(1, 0, -i, mat.path);  // -Z (Contact)
+}
+
+/* ---------- Sign / board factory (canvas text on plank panel) ---------- */
+function makeBoardTexture(lines, opts = {}) {
+  const W = 1024, H = 640;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  // plank background
+  g.fillStyle = opts.bg || '#caa46a';
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(120,84,44,.4)';
+  for (let y = 0; y < H; y += 26) g.fillRect(0, y, W, 3);
+  // border
+  g.strokeStyle = opts.border || '#6b4a26'; g.lineWidth = 18;
+  g.strokeRect(9, 9, W - 18, H - 18);
+  g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 4;
+  g.strokeRect(24, 24, W - 48, H - 48);
+
+  let y = opts.padTop || 70;
+  for (const ln of lines) {
+    g.textAlign = ln.align || 'center';
+    const x = ln.align === 'left' ? 70 : (ln.align === 'right' ? W - 70 : W / 2);
+    g.font = `${ln.weight || 700} ${ln.size || 34}px 'Segoe UI', sans-serif`;
+    g.fillStyle = ln.color || '#2b1c0c';
+    if (ln.shadow) { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillText(ln.t, x + 2, y + 2); g.fillStyle = ln.color || '#2b1c0c'; }
+    g.fillText(ln.t, x, y);
+    y += (ln.lh || (ln.size || 34) + 14);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.minFilter = THREE.LinearMipMapLinearFilter;
+  t.anisotropy = 8;
+  return t;
+}
+
+// A standing board: posts + panel, faces a given direction
+function placeBoard(x, z, facing, lines, opts = {}) {
+  const tex = makeBoardTexture(lines, opts);
+  const w = opts.w || 7, h = opts.h || 4.4, baseY = opts.baseY || 1.4;
+  // panel
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
+    new THREE.MeshLambertMaterial({ map: tex }));
+  panel.castShadow = true;
+  // backing plank slab
+  const back = new THREE.Mesh(new THREE.BoxGeometry(w + .4, h + .4, .25), mat.plank);
+  back.castShadow = true; back.receiveShadow = true;
+
+  const grp = new THREE.Group();
+  grp.add(back); panel.position.z = 0.14; grp.add(panel);
+  grp.position.set(x, baseY + h / 2, z);
+  grp.rotation.y = facing;
+  scene.add(grp);
+
+  // wooden posts
+  for (const dx of [-w/2 + .3, w/2 - .3]) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(.4, baseY + h/2 + .5, .4), mat.log);
+    const off = new THREE.Vector3(dx, 0, 0).applyAxisAngle(new THREE.Vector3(0,1,0), facing);
+    post.position.set(x + off.x, (baseY + h/2 + .5)/2, z + off.z);
+    post.castShadow = true; scene.add(post);
+  }
+  return grp;
+}
+
+// Decorative wall of stacked blocks behind a zone
+function zoneWall(cx, cz, facing, color) {
+  const len = 22, hgt = 5;
+  for (let i = -len/2; i <= len/2; i++) for (let y = 0; y <= hgt; y++) {
+    const useStone = (y === hgt) || (Math.abs(i) % 3 === 0);
+    const off = new THREE.Vector3(i, 0, 0).applyAxisAngle(new THREE.Vector3(0,1,0), facing);
+    block(Math.round(cx + off.x), y, Math.round(cz + off.z),
+          useStone ? mat.stone : mat.plank, true);
+  }
+}
+
+/* ---------- Trees ---------- */
+function tree(x, z) {
+  const h = 4 + (Math.random() * 2 | 0);
+  for (let y = 0; y < h; y++) block(x, y, z, mat.log, y < 2);
+  for (let dx = -2; dx <= 2; dx++) for (let dz = -2; dz <= 2; dz++) for (let dy = 0; dy <= 2; dy++) {
+    if (Math.abs(dx) === 2 && Math.abs(dz) === 2 && dy !== 1) continue;
+    if (dy === 2 && (Math.abs(dx) === 2 || Math.abs(dz) === 2)) continue;
+    if (dx === 0 && dz === 0 && dy < 2) continue;
+    block(x + dx, h - 1 + dy, z + dz, mat.leaves);
+  }
+}
+// scatter trees away from paths/plaza
+const treeSpots = [
+  [-30, 24],[-24,32],[-38,12],[28,30],[36,18],[24,-30],[34,-22],[-28,-30],[-36,-18],
+  [-44,-4],[44,4],[-12,40],[14,42],[-14,-44],[16,-42],[40,-40],[-40,40],[42,40],[-42,-40]
+];
+treeSpots.forEach(([x,z]) => tree(x, z));
+
+/* =========================================================
+   PORTFOLIO CONTENT — placed in four zones
+   ========================================================= */
+
+// ---- ZONE: ABOUT (west, -X) ----
+zoneWall(-30, 0, Math.PI/2, 0x6ab04c);
+placeBoard(-24, 0, Math.PI/2, [
+  { t: '§ I  —  ABOUT', size: 40, color:'#3a2510', weight:800, lh:60 },
+  { t: 'I build companies the way most kids', size: 30 },
+  { t: 'build playlists. By 15: five ventures,', size: 30 },
+  { t: 'one to paying customers in week one,', size: 30 },
+  { t: 'interning at a top-tier VC fund —', size: 30 },
+  { t: 'analyzing pitch decks before homework.', size: 30 },
+], { w: 8.5, h: 5, baseY: 1.6 });
+
+placeBoard(-24, 8, Math.PI/2, [
+  { t: 'MY EDGE — VIBE CODING', size: 36, color:'#3a2510', weight:800, lh:56 },
+  { t: 'Orchestrating AI agents to design,', size: 30 },
+  { t: 'ship & iterate at a velocity solo', size: 30 },
+  { t: 'founders weren’t supposed to have.', size: 30 },
+  { t: 'Product design = first language.', size: 28, color:'#5a3a18' },
+  { t: 'Pitching = a contact sport.', size: 28, color:'#5a3a18' },
+], { w: 8.5, h: 5, baseY: 1.6 });
+
+placeBoard(-24, -8, Math.PI/2, [
+  { t: 'FOUNDER STACK', size: 34, color:'#3a2510', weight:800, lh:50 },
+  { t: 'Product Design (Figma) · Fundraising', size: 27 },
+  { t: 'Business Dev · Operations · VC Scouting', size: 27 },
+  { t: '— AI-NATIVE DEV —', size: 26, color:'#1f6b3a', lh:46 },
+  { t: 'Cursor · Lovable · Bolt.new', size: 27 },
+  { t: 'Agent pipelines · Vibe coding', size: 27 },
+  { t: '— TECH & ML —', size: 26, color:'#1f6b3a', lh:46 },
+  { t: 'XGBoost · Data fusion · Computer vision', size: 25 },
+  { t: 'Hyperspectral · Predictive analytics', size: 25 },
+], { w: 9, h: 5.6, baseY: 1.5, padTop: 56 });
+
+placeBoard(-24, -16, Math.PI/2, [
+  { t: 'LANGUAGES', size: 36, color:'#3a2510', weight:800, lh:64 },
+  { t: 'Kazakh — Native', size: 32, lh:52 },
+  { t: 'Russian — Native', size: 32, lh:52 },
+  { t: 'English — Fluent', size: 32, lh:52 },
+], { w: 7, h: 4.4 });
+
+// ---- ZONE: VENTURES (east, +X) ----
+zoneWall(30, 0, -Math.PI/2, 0x4c6ab0);
+const ventures = [
+  { z: -16, t: '01 · EXTENSY.DEV', role:'CEO & Co-Founder', lines:[
+      '“Lovable for Chrome Extensions”', 'Multi-agent AI that builds & installs',
+      'a browser extension in under 2 minutes.', '200+ users week one · $75+ MRR',
+      '1,500+ launch views' ] },
+  { z: -6, t: '02 · SUBSISYS', role:'CEO & Founder', lines:[
+      'AI subsidy-scoring engine for agriculture.', 'XGBoost models that automate government',
+      'subsidy allocation for farmers.', 'Decentrathon 5.0 — inDrive track' ] },
+  { z: 4, t: '03 · LITHOS DIGITAL SCOUT', role:'CEO & Lead Researcher', lines:[
+      'B2B SaaS: ML + computer vision on', 'satellite imagery to predict lithium',
+      'deposits — without a single drill.', 'Functional MVP · Mining-corp pipeline' ] },
+  { z: 14, t: '04 · APLYX · TEROMI · LOOK LAB', role:'Founder · Scent for You', lines:[
+      'A portfolio across B2B SaaS, strategic', 'partnerships & two profitable e-com',
+      'stores with international logistics.', 'Teromi pilot secured · End-to-end ops' ] },
+];
+ventures.forEach(v => {
+  placeBoard(24, v.z, -Math.PI/2, [
+    { t: v.t, size: 32, color:'#2b1c0c', weight:800, lh:46 },
+    { t: v.role, size: 22, color:'#7a4a18', lh:42 },
+    ...v.lines.map((l, i) => ({ t: l, size: i >= v.lines.length-1 ? 22 : 26,
+                                color: i >= v.lines.length-1 ? '#1f6b3a' : '#2b1c0c' })),
+  ], { w: 8.4, h: 5.2, baseY: 1.5, padTop: 56 });
+});
+
+// ---- ZONE: HONORS (south, +Z) ----
+zoneWall(0, 30, 0, 0xb0a04c);
+const honors = [
+  { x: -12, title:'PLUG AND PLAY', sub:'ACCELERATOR', d:'Selected for the international program' },
+  { x: -4,  title:'HACKATHON', sub:'CHAMPION', d:'$500+ combined prize pool' },
+  { x: 4,   title:'ASTANA HUB', sub:'PIZZA PITCH', d:'Live-pitched 5 investors in a day' },
+  { x: 12,  title:'WORLD ROBOT', sub:'OLYMPIAD · FLL', d:'9th of 250+ teams, Central Asia' },
+];
+honors.forEach(h => {
+  placeBoard(h.x, 24, Math.PI, [
+    { t: '🏆', size: 60, lh: 78 },
+    { t: h.title, size: 34, color:'#3a2510', weight:800, lh:46 },
+    { t: h.sub, size: 28, color:'#7a4a18', lh:48 },
+    { t: h.d, size: 24 },
+  ], { w: 4.6, h: 5.4, baseY: 1.5, padTop: 90 });
+});
+
+// ---- ZONE: CONTACT (north, -Z) ----
+zoneWall(0, -30, Math.PI, 0xb04c8a);
+placeBoard(0, -24, 0, [
+  { t: '§ IV — CONTACT', size: 40, color:'#3a2510', weight:800, lh:64 },
+  { t: 'Building something? Let’s talk.', size: 30, color:'#5a3a18', lh:58 },
+  { t: '✉  temirlan@extensy.dev', size: 30, lh:48 },
+  { t: '☎  +7 777 111 0474', size: 30, lh:48 },
+  { t: 'in  linkedin.com/in/temirlan-kalmukhan', size: 26, lh:48 },
+  { t: '📍  Astana, Kazakhstan', size: 28, lh:48 },
+], { w: 9.5, h: 5.8, baseY: 1.5, padTop: 70 });
+
+// Welcome sign at spawn
+placeBoard(0, 5.5, Math.PI, [
+  { t: 'TEMIRLAN KALMUKHAN', size: 40, color:'#2b1c0c', weight:800, lh:56 },
+  { t: 'Founder · Vibe Coder · VC Scout', size: 26, color:'#7a4a18', lh:50 },
+  { t: 'Walk the four paths to explore →', size: 24, color:'#1f6b3a', lh:44 },
+  { t: 'W · A · S · D  to move   ·   SPACE to jump', size: 22 },
+], { w: 8, h: 4.4, baseY: 1.4 });
+
+// Direction signposts at plaza edges
+function signpost(x, z, label, color) {
+  const post = new THREE.Mesh(new THREE.BoxGeometry(.3, 2.2, .3), mat.log);
+  post.position.set(x, 1.1, z); post.castShadow = true; scene.add(post);
+  const tex = makeBoardTexture([{ t: label, size: 60, color, weight:800 }],
+                               { w:0, padTop: 130, bg:'#d8b878' });
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.2),
+    new THREE.MeshLambertMaterial({ map: tex }));
+  sign.position.set(x, 2.4, z); scene.add(sign);
+  const sign2 = sign.clone(); sign2.rotation.y = Math.PI; scene.add(sign2);
+}
+signpost(7, 0, 'VENTURES →', '#3a2a6b');
+signpost(-7, 0, '← ABOUT', '#1f6b3a');
+signpost(0, 7, 'HONORS', '#8a6b1f');
+signpost(0, -7, 'CONTACT', '#8a1f6b');
+
+/* =========================================================
+   FIRST-PERSON CONTROLLER (pointer lock + collisions)
+   ========================================================= */
+const player = {
+  pos: new THREE.Vector3(0, 1.7, 0),
+  vel: new THREE.Vector3(),
+  onGround: false,
+  height: 1.7, radius: 0.32,
+  yaw: Math.PI, pitch: 0,
+};
+const keys = {};
+addEventListener('keydown', e => { keys[e.code] = true; });
+addEventListener('keyup',   e => { keys[e.code] = false; });
+
+const overlay = document.getElementById('overlay');
+const playBtn = document.getElementById('playBtn');
+let locked = false;
+
+let dragging = false; // fallback drag-to-look when pointer lock isn't available
+
+playBtn.addEventListener('click', () => {
+  overlay.classList.add('hidden');
+  // Try pointer lock; if it fails (e.g. inside an iframe/preview), drag-to-look still works.
+  if (!isTouch && renderer.domElement.requestPointerLock) {
+    try { renderer.domElement.requestPointerLock(); } catch (_) {}
+  }
+});
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === renderer.domElement;
+});
+document.addEventListener('pointerlockerror', () => { locked = false; });
+
+function applyLook(dx, dy) {
+  player.yaw   -= dx * 0.0024;
+  player.pitch -= dy * 0.0024;
+  player.pitch = Math.max(-1.5, Math.min(1.5, player.pitch));
+}
+
+// Locked mode: raw mouse deltas.
+document.addEventListener('mousemove', e => {
+  if (locked) applyLook(e.movementX, e.movementY);
+});
+
+// Fallback: hold the left mouse button and drag to look around.
+renderer.domElement.addEventListener('mousedown', e => {
+  if (locked || isTouch) return;
+  if (overlay.classList.contains('hidden')) {
+    dragging = true;
+    renderer.domElement.style.cursor = 'grabbing';
+    // Re-attempt pointer lock on user gesture (some browsers require a fresh click).
+    if (renderer.domElement.requestPointerLock) {
+      try { renderer.domElement.requestPointerLock(); } catch (_) {}
+    }
+  }
+});
+addEventListener('mouseup', () => { dragging = false; renderer.domElement.style.cursor = ''; });
+renderer.domElement.addEventListener('mousemove', e => {
+  if (!locked && dragging) applyLook(e.movementX, e.movementY);
+});
+// Also allow look while NOT dragging once you've entered (smooth, optional): edge-pan disabled to avoid surprise.
+
+/* ---------- Touch controls ---------- */
+const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+if (isTouch) document.body.classList.add('touch');
+const joy = { active:false, id:null, dx:0, dy:0, cx:0, cy:0 };
+const joyEl = document.getElementById('joy'), knob = document.getElementById('joyKnob');
+if (isTouch) {
+  const R = 50;
+  joyEl.addEventListener('touchstart', e => {
+    const r = joyEl.getBoundingClientRect(); joy.cx = r.left + 60; joy.cy = r.top + 60;
+    joy.active = true; joy.id = e.changedTouches[0].identifier; e.preventDefault();
+  }, {passive:false});
+  addEventListener('touchmove', e => {
+    for (const t of e.changedTouches) if (t.identifier === joy.id) {
+      let dx = t.clientX - joy.cx, dy = t.clientY - joy.cy;
+      const len = Math.hypot(dx, dy) || 1; const cl = Math.min(len, R);
+      dx = dx/len*cl; dy = dy/len*cl;
+      joy.dx = dx/R; joy.dy = dy/R;
+      knob.style.transform = `translate(${dx}px,${dy}px)`;
+    }
+  }, {passive:false});
+  addEventListener('touchend', e => {
+    for (const t of e.changedTouches) if (t.identifier === joy.id) {
+      joy.active = false; joy.dx = joy.dy = 0; knob.style.transform = '';
+    }
+  });
+  // look: drag on right side of screen
+  let look = { id:null, x:0, y:0 };
+  addEventListener('touchstart', e => {
+    for (const t of e.changedTouches) {
+      if (t.clientX > innerWidth/2 && look.id === null) { look.id = t.identifier; look.x = t.clientX; look.y = t.clientY; }
+    }
+  });
+  addEventListener('touchmove', e => {
+    for (const t of e.changedTouches) if (t.identifier === look.id) {
+      player.yaw   -= (t.clientX - look.x) * 0.005;
+      player.pitch -= (t.clientY - look.y) * 0.005;
+      player.pitch = Math.max(-1.5, Math.min(1.5, player.pitch));
+      look.x = t.clientX; look.y = t.clientY;
+    }
+  });
+  addEventListener('touchend', e => {
+    for (const t of e.changedTouches) if (t.identifier === look.id) look.id = null;
+  });
+  document.getElementById('jumpBtn').addEventListener('touchstart', e => {
+    if (player.onGround) { player.vel.y = 7.4; player.onGround = false; } e.preventDefault();
+  }, {passive:false});
+}
+
+/* ---------- Collision (swept AABB against block colliders) ---------- */
+function collide(pos) {
+  const r = player.radius, ph = player.height;
+  for (const c of colliders) {
+    const minX = c.min.x - r, maxX = c.max.x + r;
+    const minZ = c.min.z - r, maxZ = c.max.z + r;
+    const feet = pos.y - ph, head = pos.y;
+    if (pos.x > minX && pos.x < maxX && pos.z > minZ && pos.z < maxZ &&
+        head > c.min.y && feet < c.max.y) {
+      // push out along least-penetration axis (X or Z only — keeps it simple/solid)
+      const pX = pos.x < (c.min.x+c.max.x)/2 ? minX - pos.x : maxX - pos.x;
+      const pZ = pos.z < (c.min.z+c.max.z)/2 ? minZ - pos.z : maxZ - pos.z;
+      if (Math.abs(pX) < Math.abs(pZ)) pos.x += pX; else pos.z += pZ;
+    }
+  }
+}
+
+/* ---------- Zone detection for HUD toast ---------- */
+const compass = document.getElementById('compass');
+const toast = document.getElementById('zoneToast');
+const slots = [...document.querySelectorAll('.slot')];
+let currentZone = -1;
+const zones = [
+  { name:'ABOUT', sub:'§ I', test:p => p.x < -14 && Math.abs(p.z) < 20, slot:0 },
+  { name:'VENTURES', sub:'§ II', test:p => p.x > 14 && Math.abs(p.z) < 20, slot:1 },
+  { name:'HONORS', sub:'§ III', test:p => p.z > 14 && Math.abs(p.x) < 18, slot:2 },
+  { name:'CONTACT', sub:'§ IV', test:p => p.z < -14 && Math.abs(p.x) < 14, slot:3 },
+];
+function updateZone() {
+  let z = -1;
+  for (let i = 0; i < zones.length; i++) if (zones[i].test(player.pos)) { z = i; break; }
+  if (z !== currentZone) {
+    currentZone = z;
+    slots.forEach((s, i) => s.classList.toggle('active', z === -1 ? i === 0 : zones[z]?.slot === i));
+    if (z >= 0) {
+      toast.querySelector('.big').textContent = zones[z].name;
+      toast.querySelector('.small').textContent = zones[z].sub;
+      toast.classList.add('show');
+      clearTimeout(toast._t); toast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+  }
+}
+const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+function updateCompass() {
+  let a = ((player.yaw % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+  const idx = Math.round(a / (Math.PI/4)) % 8;
+  compass.textContent = dirs[idx];
+}
+
+/* ---------- Hotbar teleport (press 1-4) ---------- */
+// Each inventory item warps you straight in front of that zone's boards.
+const teleports = [
+  { name:'HOME',     sub:'§ · SPAWN', x: 0,  z: 1,   yaw: Math.PI },        // 1 · 🏠
+  { name:'VENTURES', sub:'§ II',      x: 18, z: -1,  yaw: -Math.PI / 2 },   // 2 · 🚀
+  { name:'HONORS',   sub:'§ III',     x: 0,  z: 18,  yaw: Math.PI },        // 3 · 🏆
+  { name:'CONTACT',  sub:'§ IV',      x: 0,  z: -18, yaw: 0 },              // 4 · ✉️
+];
+function teleportTo(i) {
+  const t = teleports[i];
+  if (!t) return;
+  player.pos.set(t.x, player.height, t.z);
+  player.vel.set(0, 0, 0);
+  player.yaw = t.yaw;
+  player.pitch = 0;
+  player.onGround = true;
+  // highlight chosen inventory slot
+  slots.forEach((sl, idx) => sl.classList.toggle('active', idx === i));
+  currentZone = -2; // force zone re-eval on next frame
+  // toast feedback
+  toast.querySelector('.big').textContent = t.name;
+  toast.querySelector('.small').textContent = t.sub;
+  toast.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+addEventListener('keydown', e => {
+  const n = { Digit1:0, Numpad1:0, Digit2:1, Numpad2:1, Digit3:2, Numpad3:2, Digit4:3, Numpad4:3 }[e.code];
+  if (n !== undefined) teleportTo(n);
+});
+// also let clicking a hotbar slot teleport (handy on laptop/touch)
+slots.forEach((sl, i) => { sl.style.pointerEvents = 'auto'; sl.style.cursor = 'pointer';
+  sl.addEventListener('click', () => teleportTo(i)); });
+
+/* ---------- Main loop ---------- */
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  // movement input
+  const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+  const right   = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+  const move = new THREE.Vector3();
+  if (keys['KeyW']) move.add(forward);
+  if (keys['KeyS']) move.sub(forward);
+  if (keys['KeyD']) move.add(right);
+  if (keys['KeyA']) move.sub(right);
+  if (isTouch && (joy.dx || joy.dy)) { move.add(forward.clone().multiplyScalar(-joy.dy)); move.add(right.clone().multiplyScalar(joy.dx)); }
+  if (move.lengthSq() > 0) move.normalize();
+
+  const sprint = keys['ShiftLeft'] || keys['ShiftRight'] ? 1.7 : 1;
+  const speed = 5.2 * sprint;
+  player.vel.x = move.x * speed;
+  player.vel.z = move.z * speed;
+
+  if (keys['Space'] && player.onGround) { player.vel.y = 7.4; player.onGround = false; }
+  player.vel.y -= 22 * dt; // gravity
+
+  // integrate with axis-separated collision
+  player.pos.x += player.vel.x * dt; collide(player.pos);
+  player.pos.z += player.vel.z * dt; collide(player.pos);
+  player.pos.y += player.vel.y * dt;
+
+  // ground at y = floor top (0) → eye height 1.7
+  if (player.pos.y <= player.height) { player.pos.y = player.height; player.vel.y = 0; player.onGround = true; }
+
+  // keep inside world
+  const lim = WORLD - 2;
+  player.pos.x = Math.max(-lim, Math.min(lim, player.pos.x));
+  player.pos.z = Math.max(-lim, Math.min(lim, player.pos.z));
+
+  // camera
+  camera.position.copy(player.pos);
+  const dir = new THREE.Vector3(
+    -Math.sin(player.yaw) * Math.cos(player.pitch),
+    Math.sin(player.pitch),
+    -Math.cos(player.yaw) * Math.cos(player.pitch)
+  );
+  camera.lookAt(player.pos.clone().add(dir));
+
+  // subtle head-bob
+  if (move.lengthSq() > 0 && player.onGround) {
+    camera.position.y += Math.sin(clock.elapsedTime * 11) * 0.04;
+  }
+
+  updateZone();
+  updateCompass();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+document.getElementById('loading').style.display = 'none';
+animate();
+</script>
+</body>
+</html>
